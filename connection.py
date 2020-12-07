@@ -6,6 +6,9 @@ from mysql.connector import Error
 from mysql.connector import errorcode
 from datetime import datetime
 
+logging.basicConfig(filename='example.log',
+                    level=logging.DEBUG, format='%(asctime)s %(message)s')
+
 TABLES = {}
 TABLES['users'] = (
     "CREATE TABLE `users` ("
@@ -52,7 +55,7 @@ class MySQLDatabase:
 
             if self.con.is_connected():
                 db_Info = self.con.get_server_info()
-                #print("Connected to MySQL Server version ", db_Info)
+                # print("Connected to MySQL Server version ", db_Info)
 
         except Error as e:
             print("Error while connecting to MySQL", e)
@@ -63,6 +66,8 @@ class MySQLDatabase:
 
     def add_user(self, first_name, email, points, probability):
         try:
+            logging.info('Add user ' + first_name + "," +
+                         email + "," + str(points) + "," + str(probability))
             self.connect()
             now = datetime.now()
             add_user_statement = ('INSERT INTO users ( first_name, email, points, probability, created_at, updated_at) '
@@ -72,6 +77,7 @@ class MySQLDatabase:
             self.con.commit()
             self.close()
         except mysql.connector.Error as err:
+            logging.exception('Error in Add luckydrawrecord ' + first_name)
             print("Add user Something went wrong: {}".format(err))
 
     def update_user(self, user_id, first_name, email, points, probability):
@@ -100,6 +106,8 @@ class MySQLDatabase:
 
     def add_luckydrawrecord(self, first_name):
         try:
+
+            logging.info('Add luckydrawrecord ' + first_name)
             self.connect()
             get_user_statement = (
                 "SELECT * FROM users WHERE first_name LIKE %s ORDER BY created_at DESC LIMIT 0, 1")
@@ -114,6 +122,7 @@ class MySQLDatabase:
             self.con.commit()
             self.close()
         except mysql.connector.Error as err:
+            logging.exception('Error in Add luckydrawrecord ' + first_name)
             print("Add luckydraw Something went wrong: {}".format(err))
 
     def create_database(self):
