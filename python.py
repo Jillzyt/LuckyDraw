@@ -5,7 +5,6 @@ import numpy as np
 from datetime import date
 from connection import MySQLDatabase
 
-
 # Input
 print("What's the name of the excel?")
 excel_name = input()
@@ -23,8 +22,9 @@ totalPoints = 0
 for entry in hashmap:
     totalPoints += entry['Total Points']
 
+print(totalPoints)
 for entry in hashmap:
-    entry['probability'] = int(entry['Total Points']) / totalPoints
+    entry['probability'] = entry['Total Points'] / totalPoints
 
 
 def get_winner(winning_probability):
@@ -47,6 +47,8 @@ def convertTuple(winner_tuple):
 # Update in database
 x = MySQLDatabase()
 for entry in hashmap:
+    if (pd.isnull(entry['First Name'])):
+        entry['First Name'] = ""
     x.add_user(entry['First Name'], entry['Email'],
                entry['Total Points'], entry['probability'])
 
@@ -56,10 +58,10 @@ random.seed(a=date.today(), version=2)
 winning_probability = random.uniform(0, 1)
 name_of_winner = get_winner(winning_probability)
 winner_tuple = x.retrieve_user(name_of_winner)
+x.add_luckydrawrecord(name_of_winner)
 winner_tuple_in_str = convertTuple(winner_tuple)
 
 
 # Store in database
 x = MySQLDatabase()
-x.add_luckydrawrecord(winner_tuple[0])
 print("The winner is :", winner_tuple_in_str)

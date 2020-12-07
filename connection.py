@@ -1,5 +1,6 @@
 import mysql.connector
 
+import logging
 import mysql.connector
 from mysql.connector import Error
 from mysql.connector import errorcode
@@ -9,10 +10,10 @@ TABLES = {}
 TABLES['users'] = (
     "CREATE TABLE `users` ("
     "  `user_id` int(11) NOT NULL AUTO_INCREMENT,"
-    "  `first_name` varchar(40) NOT NULL,"
-    "  `email` varchar(30) NOT NULL,"
-    "  `points` bigint NOT NULL,"
-    "  `probability` bigint NOT NULL,"
+    "  `first_name` varchar(100) NULL,"
+    "  `email` varchar(100) NOT NULL,"
+    "  `points` FLOAT NOT NULL,"
+    "  `probability` VARCHAR(6000) NOT NULL,"
     "  `created_at` DATETIME NOT NULL,"
     "  `updated_at` DATETIME NOT NULL,"
     "  PRIMARY KEY (`user_id`)"
@@ -41,7 +42,7 @@ class MySQLDatabase:
             'user': 'root',
             'password': 'Test1234',
             'host': '192.168.64.3',
-            'database': 'luckydraw500',
+            'database': 'luckydraw501',
             'raise_on_warnings': True,
         }
 
@@ -71,7 +72,7 @@ class MySQLDatabase:
             self.con.commit()
             self.close()
         except mysql.connector.Error as err:
-            print("Something went wrong: {}".format(err))
+            print("Add user Something went wrong: {}".format(err))
 
     def update_user(self, user_id, first_name, email, points, probability):
         try:
@@ -95,26 +96,31 @@ class MySQLDatabase:
             user = self.cur.fetchone()
             return user
         except mysql.connector.Error as err:
-            print("Something went wrong: {}".format(err))
+            print("Retrieve user Something went wrong: {}".format(err))
 
-    def add_luckydrawrecord(self, winner_id):
+    def add_luckydrawrecord(self, first_name):
         try:
             self.connect()
+            get_user_statement = (
+                "SELECT * FROM users WHERE first_name LIKE %s ORDER BY created_at DESC LIMIT 0, 1")
+            self.cur.execute(get_user_statement, (first_name,))
+            winner_id = self.cur.fetchone()[0]
+            print(winner_id)
             now = datetime.now()
             add_ld_record_statement = ('INSERT INTO luckydraws (winner_id,created_at,updated_at) '
                                        'VALUES (%s, %s, %s)')
             self.cur.execute(add_ld_record_statement,
                              (winner_id, now.strftime('%Y-%m-%d %H:%M:%S'), now.strftime('%Y-%m-%d %H:%M:%S')))
+            self.con.commit()
             self.close()
-
         except mysql.connector.Error as err:
-            print("Something went wrong: {}".format(err))
+            print("Add luckydraw Something went wrong: {}".format(err))
 
     def create_database(self):
         # CREATE DATABASE
         try:
             self.cur.execute(
-                "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format('luckydraw500'))
+                "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format('luckydraw501'))
 
         except mysql.connector.Error as err:
             print("Failed creating database: {}".format(err))
