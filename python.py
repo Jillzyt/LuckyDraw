@@ -1,13 +1,16 @@
 from random import randrange
 import pandas as pd
+import time
 import random
 import numpy as np
 from datetime import date
 from connection import MySQLDatabase
 
 # Input
-print("What's the name of the excel?")
-excel_name = input()
+#print("What's the name of the excel?")
+#excel_name = input()
+
+excel_name = "messages.csv"
 
 # Read the csv
 # print(excel_name)
@@ -22,7 +25,8 @@ totalPoints = 0
 for entry in hashmap:
     totalPoints += entry['Total Points']
 
-print(totalPoints)
+# print(totalPoints)
+
 for entry in hashmap:
     entry['probability'] = entry['Total Points'] / totalPoints
 
@@ -64,4 +68,19 @@ winner_tuple_in_str = convertTuple(winner_tuple)
 
 # Store in database
 x = MySQLDatabase()
-print("The winner is :", winner_tuple_in_str)
+#print("The winner is :", winner_tuple_in_str)
+
+
+def countdown(t):
+
+    while t:
+        mins, secs = divmod(t, 60)
+        timer = '{:02d}:{:02d}'.format(mins, secs)
+        print(timer, end="\r")
+        time.sleep(1)
+        t -= 1
+
+    print("The winner is :", winner_tuple[1])
+
+
+countdown(5)

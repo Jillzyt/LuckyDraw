@@ -123,7 +123,6 @@ class MySQLDatabase:
                 "SELECT * FROM users WHERE first_name LIKE %s ORDER BY created_at DESC LIMIT 0, 1")
             self.cur.execute(get_user_statement, (first_name,))
             winner_id = self.cur.fetchone()[0]
-            print(winner_id)
             now = datetime.now()
             add_ld_record_statement = ('INSERT INTO luckydraws (winner_id,created_at,updated_at) '
                                        'VALUES (%s, %s, %s)')
