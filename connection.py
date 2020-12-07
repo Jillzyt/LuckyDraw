@@ -6,10 +6,14 @@ from mysql.connector import Error
 from mysql.connector import errorcode
 from datetime import datetime
 
+# Logging configurations
 logging.basicConfig(filename='example.log',
                     level=logging.DEBUG, format='%(asctime)s %(message)s')
 
+# Tables to be created
+
 TABLES = {}
+
 TABLES['users'] = (
     "CREATE TABLE `users` ("
     "  `user_id` int(11) NOT NULL AUTO_INCREMENT,"
@@ -35,11 +39,13 @@ TABLES['luckydraws'] = (
     ") ENGINE=InnoDB")
 
 
+# MYSQLDatabase class
 class MySQLDatabase:
     def __init__(self):
         self.con = None
         self.cur = None
 
+    # Connect to database
     def connect(self):
         config = {
             'user': 'root',
@@ -60,6 +66,7 @@ class MySQLDatabase:
         except Error as e:
             print("Error while connecting to MySQL", e)
 
+    # Close database connection
     def close(self):
         self.cur.close()
         self.con.close()
@@ -80,6 +87,7 @@ class MySQLDatabase:
             logging.exception('Error in Add luckydrawrecord ' + first_name)
             print("Add user Something went wrong: {}".format(err))
 
+    # Update user
     def update_user(self, user_id, first_name, email, points, probability):
         try:
             self.connect()
@@ -93,6 +101,7 @@ class MySQLDatabase:
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
 
+    # Retrieve user
     def retrieve_user(self, first_name):
         try:
             self.connect()
@@ -104,6 +113,7 @@ class MySQLDatabase:
         except mysql.connector.Error as err:
             print("Retrieve user Something went wrong: {}".format(err))
 
+    # Add luckydraw record
     def add_luckydrawrecord(self, first_name):
         try:
 
@@ -125,16 +135,32 @@ class MySQLDatabase:
             logging.exception('Error in Add luckydrawrecord ' + first_name)
             print("Add luckydraw Something went wrong: {}".format(err))
 
+    # Create database and tables
     def create_database(self):
-        # CREATE DATABASE
+
+        # Create database
+        config = {
+            'user': 'root',
+            'password': 'Test1234',
+            'host': '192.168.64.3',
+            'raise_on_warnings': True,
+        }
+
         try:
+            self.con = mysql.connector.connect(**config)
+            self.cur = self.con.cursor()
+            print("Creating database {}: ".format('luckydraw501'), end='')
             self.cur.execute(
                 "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format('luckydraw501'))
 
         except mysql.connector.Error as err:
             print("Failed creating database: {}".format(err))
 
-        # CREATE TABLES
+        print("OK")
+        # Connect to database
+        self.connect()
+
+        # Create TABLES
         for table_name in TABLES:
             table_description = TABLES[table_name]
             try:
@@ -151,7 +177,6 @@ class MySQLDatabase:
 
 def main():
     db = MySQLDatabase()
-    db.connect()
     db.create_database()
     db.close()
 
